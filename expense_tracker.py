@@ -24,6 +24,7 @@ class ExpenseTracker:
         item = Item(name, price, quantity, category)
         self.items.append(item)
         print(f"\n✅ Added: {name}, {quantity} x {price} in category '{category}'.")
+        self.save_to_csv()  # 💾 Auto-save after adding
 
     def show_items(self):
         if not self.items:
@@ -75,10 +76,29 @@ class ExpenseTracker:
                 ])
         print(f"\n💾 Expenses saved to {filename}")
 
+    def load_from_csv(self, filename="expenses.csv"):
+        try:
+            with open(filename, "r") as f:
+                 reader = csv.DictReader(f)
+                 for row in reader:
+                     item = Item(
+                        name=row["Name"],
+                        price=float(row["Price"]),
+                        quantity=int(row["Quantity"]),
+                        category=row["Category"],
+                        date=datetime.strptime(row["Date"], "%Y-%m-%d %H:%M")
+                     )
+
+                     self.items.append(item)
+            print(f"📂 Loaded {len(self.items)} expenses from {filename}")
+
+        except FileNotFoundError:
+            print("⚠️ No saved data found — starting fresh.")
 
 # ===== CLI Interaction =====
 def main():
     tracker = ExpenseTracker()
+    tracker.load_from_csv()  # 🧠 Auto-load at startup
     
     while True:
         print("\n--- Expense Tracker Menu ---")
@@ -110,6 +130,7 @@ def main():
             tracker.save_to_csv()
 
         elif choice == "6":
+            tracker.save_to_csv()
             print("👋 Exiting... Goodbye!")
             break
 
